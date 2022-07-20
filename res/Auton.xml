@@ -1,0 +1,8 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<auton name="Thing">
+
+	<look x="" y="" z="" />
+	<move x="" y="" z="" />
+	
+</auton>
