@@ -9,9 +9,15 @@ class AutonReader {
 public:
 
 	struct Step {
+		Step(Vec3 _pos, Quaternion _rot, bool _end) {
+			pos = _pos;
+			rot = _rot;
+			end = _end;
+		}
+
 		Vec3 pos;
 		Quaternion rot;
-		bool end = false;
+		bool end;
 	};
 
 	AutonReader(std::string filepath);

@@ -29,38 +29,42 @@ AutonReader::Step AutonReader::getNextStep() {
 	}
 
 	if (_line == nullptr) {
-		return Step{ NULL, NULL, true };
+		return Step( Vec3(), Quaternion(), true );
 	}
 
 	if (std::strcmp(_line->Name(), "look") == 0) {
 
-		double x;
-		double y;
-		double z;
+		const char* lat;
+		const char* lon;
+		double alt;
 
-		_line->QueryDoubleAttribute("x", &x);
-		_line->QueryDoubleAttribute("y", &y);
-		_line->QueryDoubleAttribute("z", &z);
+		_line->QueryStringAttribute("lat", &lat);
+		_line->QueryStringAttribute("lon", &lon);
+		_line->QueryDoubleAttribute("alt", &alt);
 
-		_looking = Vec3{ x, y, z };
+		_looking = geoToCoords(lat, lon, alt);
 
 		return getNextStep();
 	}
 	else if (std::strcmp(_line->Name(), "move") == 0) {
 
-		double x;
-		double y;
-		double z;
+		const char* lat;
+		const char* lon;
+		double alt;
 
-		_line->QueryDoubleAttribute("x", &x);
-		_line->QueryDoubleAttribute("y", &y);
-		_line->QueryDoubleAttribute("z", &z);
+		_line->QueryStringAttribute("lat", &lat);
+		_line->QueryStringAttribute("lon", &lon);
+		_line->QueryDoubleAttribute("alt", &alt);
 
-		 Vec3 pos{ x, y, z };
+		Vec3 pos = geoToCoords(lat, lon, alt);
+		Vec3 eul = lookAt(pos, _looking);
 
-		 Quaternion rot = eulerToQuat(lookAt(pos, _looking));
+		Quaternion rot = eulerToQuat(lookAt(pos, _looking));
 
-		 return Step{ pos, rot };
+		 return Step(pos, rot, false);
+	}
+	else {
+		printf("Error: could not read xml\n");
 	}
 }
 

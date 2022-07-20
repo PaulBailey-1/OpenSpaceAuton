@@ -16,5 +16,7 @@ public:
 private:
 
 	std::ofstream _file;
+	double _time;
+	double _speed;
 
 };

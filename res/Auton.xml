@@ -1,8 +1,8 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 
 <auton name="Thing">
 
-	<look x="" y="" z="" />
-	<move x="" y="" z="" />
+	<look lat="0.0N" lon="0.0E" alt="0.0" />
+	<move lat="0.0N" lon="0.0E" alt="100000.0" />
 	
 </auton>
