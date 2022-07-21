@@ -35,11 +35,5 @@
     <ClInclude Include="include\RecordingFile.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\MathTypes.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\Utils.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
 </Project>

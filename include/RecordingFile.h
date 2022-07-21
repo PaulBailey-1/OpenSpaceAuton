@@ -8,7 +8,7 @@
 class RecordingFile {
 public:
 
-	RecordingFile(std::string outputPath, std::string name);
+	RecordingFile(std::string outputPath, std::string name, double speed);
 
 	void add(AutonReader::Step step);
 	void close();

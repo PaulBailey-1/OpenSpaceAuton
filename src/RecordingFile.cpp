@@ -1,9 +1,11 @@
 #include "RecordingFile.h"
 
-RecordingFile::RecordingFile(std::string outputPath, std::string name) {
+RecordingFile::RecordingFile(std::string outputPath, std::string name, double speed) {
+
+	printf("Opening recording... \n");
 
 	_time = 0.0;
-	_speed = 1.0;
+	_speed = speed;
 
 	_file.open((outputPath + name + ".osrectxt"));
 

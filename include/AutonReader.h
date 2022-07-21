@@ -1,30 +1,40 @@
 #pragma once
 #include <string>
 #include <iostream>
+#include <vector>
 
 #include "tinyxml2.h"
-#include "MathTypes.h"
+#include "glm/vec3.hpp"
+#include "glm/gtc/quaternion.hpp"
 
 class AutonReader {
 public:
 
 	struct Step {
-		Step(Vec3 _pos, Quaternion _rot, bool _end) {
+		Step(glm::vec3 _pos, glm::quat _rot) {
 			pos = _pos;
 			rot = _rot;
-			end = _end;
 		}
 
-		Vec3 pos;
-		Quaternion rot;
-		bool end;
+		Step(glm::vec3 _pos) {
+			pos = _pos;
+		}
+
+		glm::vec3 pos;
+		glm::quat rot;
 	};
 
 	AutonReader(std::string filepath);
 
-	Step getNextStep();
+	void interpolatePoints();
+	void reducePoints();
+	void computeView();
+
+	int getNumSteps();
+	Step getStep(int i);
 
 	std::string getAutonName();
+	double getAutonSpeed();
 
 private:
 
@@ -32,6 +42,11 @@ private:
 	tinyxml2::XMLElement* _auton;
 	tinyxml2::XMLElement* _line;
 
-	Vec3 _looking;
+	glm::vec3 _target;
+	bool _lookForward;
+
+	std::vector<Step> _steps;
+
+	glm::vec3 parseCoordinates(const char* coords, bool flip = false, char delim = ' ');
 
 };
