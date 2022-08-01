@@ -8,15 +8,18 @@
 class RecordingFile {
 public:
 
-	RecordingFile(std::string outputPath, std::string name, double speed);
+	RecordingFile(std::string outputPath, std::string name);
 
 	void add(AutonReader::Step step);
 	void close();
+
+	void setTime(int64_t time);
 
 private:
 
 	std::ofstream _file;
 	double _time;
-	double _speed;
+
+	int64_t _simTime;
 
 };

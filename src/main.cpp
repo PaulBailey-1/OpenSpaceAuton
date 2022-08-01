@@ -6,12 +6,14 @@
 int main() {
 
 	AutonReader auton("res/Auton.xml");
-	RecordingFile record("C:\\OpenSpace\\OpenSpace-0.18.0\\user\\recordings\\", auton.getAutonName(), auton.getAutonSpeed());
+	RecordingFile record("C:\\OpenSpace\\OpenSpace-0.18.0\\user\\recordings\\", auton.getAutonName());
+
+	record.setTime(auton.getAutonTime());
 
 	printf("Smoothing...\n");
-	auton.reducePoints();
-	auton.interpolatePoints();
-	auton.interpolatePoints();
+	//auton.reducePoints();
+	//auton.interpolatePoints();
+	//auton.interpolatePoints();
 
 	printf("Calculating rotations ...\n");
 	auton.computeView();
