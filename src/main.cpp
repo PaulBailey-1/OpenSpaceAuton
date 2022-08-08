@@ -10,13 +10,10 @@ int main() {
 
 	record.setTime(auton.getAutonTime());
 
-	printf("Smoothing...\n");
-	//auton.reducePoints();
-	//auton.interpolatePoints();
-	//auton.interpolatePoints();
-
 	printf("Calculating rotations ...\n");
 	auton.computeView();
+	auton.interpolatePoints();
+	auton.computeSpeeds();
 
 	printf("Recording steps... \n");
 	for (int i = 0; i < auton.getNumSteps(); i++) {

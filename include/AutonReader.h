@@ -7,6 +7,25 @@
 #include "glm/vec3.hpp"
 #include "glm/gtc/quaternion.hpp"
 
+struct Geo {
+
+	Geo() {
+		lat = 0.0;
+		lon = 0.0;
+		alt = 0.0;
+	}
+
+	Geo(double lat_, double lon_, double alt_) {
+		lat = lat_;
+		lon = lon_;
+		alt = alt_;
+	}
+
+	double lat;
+	double lon;
+	double alt;
+};
+
 class AutonReader {
 public:
 
@@ -17,44 +36,53 @@ public:
 	};
 
 	struct Step {
-		Step(glm::vec3 _pos, glm::quat _rot) {
-			pos = _pos;
-			rot = _rot;
+
+		enum StepType {
+			CAMERA,
+			DELTATIME
+		};
+
+		Step(Step::StepType type_) {
+			type = type_;
+
+			pos = glm::vec3();
+			rot = glm::quat();
+			target = glm::vec3();
+			lookType = TARGET;
 			speed = 0.0;
+			time = 0.0;
+			geo = Geo();
+
+			interpolate = 0;
+			altSpeed = true;
+
+			deltaTime = 0;
 		}
 
-		Step(glm::vec3 _pos, LookType _lookType, glm::vec3 _target, double _speed) {
-			pos = _pos;
-			lookType = _lookType;
-			target = _target;
-			speed = _speed;
-		}
-
-		Step(glm::vec3 _pos, LookType _lookType, double _speed) {
-			pos = _pos;
-			lookType = _lookType;
-			speed = _speed;
-		}
+		StepType type;
 
 		glm::vec3 pos;
 		glm::quat rot;
 		glm::vec3 target;
 		LookType lookType;
-		double speed;
 
-		double lat;
-		double lon;
-		double alt;
+		double speed;
+		double time;
+
+		Geo geo;
+
+		int interpolate;
+		int deltaTime;
+
+		bool altSpeed;
 
 	};
 
 	AutonReader(std::string filepath);
 
 	void interpolatePoints();
-	void reducePoints();
 	void computeView();
-	void simulatePath(int startIndex, int endIndex);
-	void equalizePath(int startIndex, int endIndex);
+	void computeSpeeds();
 
 	int getNumSteps();
 	Step getStep(int i);
@@ -75,6 +103,8 @@ private:
 
 	std::vector<Step> _steps;
 
-	glm::vec3 parseCoordinates(const char* coords, double altOffset = 0.0, bool flip = false, char delim = ' ');
+	Geo parseCoordinates(const char* coords, bool flip = false, char delim = ' ');
+	glm::vec3 geoToCoordinates(Geo point);
+	Step getNextCamera(int current);
 
 };

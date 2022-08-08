@@ -38,10 +38,26 @@ AutonReader::AutonReader(std::string filepath) {
 
 		if (std::strcmp(_line->Name(), "lookTarget") == 0) {
 
-			_target = parseCoordinates(_line->GetText());
+			_target = geoToCoordinates(parseCoordinates(_line->GetText()));
 
 		}
 		else if (std::strcmp(_line->Name(), "move") == 0) {
+
+			LookType lookType;
+			const char* look;
+			if (_line->QueryStringAttribute("look", &look) == tinyxml2::XMLError::XML_NO_ATTRIBUTE) {
+				look = "target";
+			}
+
+			if (strcmp(look, "forward") == 0) {
+				lookType = FORWARD;
+			}
+			else if (strcmp(look, "backward") == 0) {
+				lookType = BACKWARD;
+			}
+			else if (strcmp(look, "target") == 0) {
+				lookType = TARGET;
+			}
 
 			double speed = 0.0;
 			_line->QueryDoubleAttribute("speed", &speed);
@@ -50,8 +66,28 @@ AutonReader::AutonReader(std::string filepath) {
 				speed = _speed;
 			}
 
-			glm::vec3 pos = parseCoordinates(_line->GetText());
-			_steps.push_back(Step(pos, LookType::TARGET, _target, speed));
+			double delay = 0.0;
+			_line->QueryDoubleAttribute("delay", &delay);
+
+			int factor = 0;
+			_line->QueryIntAttribute("factor", &factor);
+
+			bool altSpeed = true;
+			_line->QueryBoolAttribute("altSpeed", &altSpeed);
+
+			Geo point = parseCoordinates(_line->GetText());
+			glm::vec3 pos = geoToCoordinates(point);
+
+			_steps.push_back(Step(Step::StepType::CAMERA));
+			_steps.back().pos = pos;
+			_steps.back().lookType = lookType;
+			_steps.back().target = _target;
+			_steps.back().speed = speed;
+			_steps.back().interpolate = factor;
+			_steps.back().lookType = lookType;
+			_steps.back().geo = point;
+			_steps.back().altSpeed = altSpeed;
+			_steps.back().time = delay;
 
 		}
 		else if (std::strcmp(_line->Name(), "coordinates") == 0) {
@@ -80,6 +116,9 @@ AutonReader::AutonReader(std::string filepath) {
 			double rise = 0.0;
 			_line->QueryDoubleAttribute("rise", &rise);
 
+			int factor = 0;
+			_line->QueryIntAttribute("factor", &factor);
+
 			const char* coords = _line->GetText();
 
 			std::string str(coords);
@@ -91,15 +130,26 @@ AutonReader::AutonReader(std::string filepath) {
 
 			while (ss >> coord) {
 
-				glm::vec3 pos = parseCoordinates(coord.c_str(), riseOffset, true, ',');
+				Geo point = parseCoordinates(coord.c_str(), true, ',');
+				point.alt += riseOffset;
+				glm::vec3 pos = geoToCoordinates(point);
 
-				_steps.push_back(Step(pos, lookType, pow(10, -0.000001 * riseOffset * log(speed))));
+				_steps.push_back(Step(Step::StepType::CAMERA));
+				_steps.back().pos = pos;
+				_steps.back().lookType = lookType;
+				_steps.back().speed = speed;
+				_steps.back().geo = point;
+				_steps.back().interpolate = factor;
 
 				riseOffset += rise;
 			}
 
-			//simulatePath(startIndex, _steps.size());
-			//equalizePath(startIndex, _steps.size() - 1);
+		} else if (std::strcmp(_line->Name(), "simSpeed") == 0) {
+			int sim = 0;
+			_line->QueryIntAttribute("deltaSpeed", &sim);
+
+			_steps.push_back(Step(Step::DELTATIME));
+			_steps.back().deltaTime = sim;
 		}
 		else {
 			printf("Error: could not read xml\n");
@@ -108,20 +158,55 @@ AutonReader::AutonReader(std::string filepath) {
 }
 
 void AutonReader::interpolatePoints() {
-	for (int i = 0; i < _steps.size() - 1; i += 2) {
 
-		glm::vec3 pos = (_steps[i].pos + _steps[i + 1].pos) / 2.0f;
-		glm::quat rot = glm::quatLookAt(glm::normalize(_target - pos), glm::normalize(pos));
+	int startIndex = 0;
+	int endIndex = _steps.size() - 1;
+	int loop = 0;
 
-		Step step(pos, rot);
+	for (int i = 0; i < _steps.size(); i++) {
+		if (loop > 0 && _steps[i].interpolate == 0) {
+			endIndex = i - 1;
+			break;
+		}
+		if (_steps[i].interpolate > 0 && loop == 0) {
+			startIndex = i;
+			loop = _steps[i].interpolate;
+		}
+	}
 
-		_steps.insert(_steps.begin() + i + 1, step);
+	int endOffset = _steps.size() - 1 - endIndex;
+	for (int j = 0; j < loop; j++) {
+		for (int i = startIndex; i < _steps.size() - 1 - endOffset; i += 2) {
+
+			Geo mean;
+			Step nextStep = getNextCamera(i);
+			mean.lat = (_steps[i].geo.lat + nextStep.geo.lat) / 2;
+			mean.lon = (_steps[i].geo.lon + nextStep.geo.lon) / 2;
+			mean.alt = (_steps[i].geo.alt + nextStep.geo.alt) / 2;
+
+			Step newStep = _steps[i];
+			newStep.geo = mean;
+			newStep.pos = geoToCoordinates(mean);
+
+			newStep.rot = glm::mix(nextStep.rot, _steps[i].rot, 0.5f);
+
+			_steps.insert(_steps.begin() + i + 1, newStep);
+		}
 	}
 }
 
-void AutonReader::reducePoints() {
-	for (int i = 0; i < _steps.size() - 2; i ++) {
-		_steps.erase(_steps.begin() + i + 1);
+void AutonReader::computeSpeeds() {
+
+	for (int i = 0; i < _steps.size() - 1; i++) {
+		if (!_steps[i].time > 0 && _steps[i].speed > 0.0) {
+
+			if (_steps[i].altSpeed) {
+				_steps[i].speed *= pow(2, _steps[i].geo.alt * 0.00003);
+			}
+
+			double distance = glm::length(getNextCamera(i).pos - _steps[i].pos);
+			_steps[i].time = distance / _steps[i].speed;
+		}
 	}
 }
 
@@ -130,9 +215,22 @@ void AutonReader::computeView() {
 		if (_steps[i].lookType == LookType::TARGET) {
 			_steps[i].rot = glm::quatLookAt(glm::normalize(_steps[i].target - _steps[i].pos), glm::normalize(_steps[i].pos));
 		}
-		else if (_steps[i].lookType == LookType::FORWARD && i < _steps.size() - 10) {
-			_steps[i].rot = glm::quatLookAt(glm::normalize(_steps[(int) (floor((i + 10) / 10.0) * 10)].pos - _steps[i].pos), glm::normalize(_steps[i].pos));
+		else if (_steps[i].lookType == LookType::FORWARD) {
+			if (i != _steps.size() - 1) {
+				Geo geoTarget = getNextCamera(i).geo;
+				geoTarget.alt = _steps[i].geo.alt;
+				glm::vec3 target = geoToCoordinates(geoTarget);
+
+				_steps[i].rot = glm::quatLookAt(glm::normalize(target - _steps[i].pos), glm::normalize(_steps[i].pos));
+			}
+			else {
+				_steps[i].rot = _steps[i - 1].rot;
+			}
+			
 		}
+		//else if (_steps[i].lookType == LookType::FORWARD && i < _steps.size() - 10) {
+		//	_steps[i].rot = glm::quatLookAt(glm::normalize(_steps[(int) (floor((i + 10) / 10.0) * 10)].pos - _steps[i].pos), glm::normalize(_steps[i].pos));
+		//}
 		else if (_steps[i].lookType == LookType::BACKWARD && i >= 10) {
 			_steps[i].rot = glm::quatLookAt(glm::normalize(_steps[i - 10].pos - _steps[i].pos), glm::normalize(_steps[i].pos));
 		}
@@ -161,7 +259,7 @@ int64_t AutonReader::getAutonTime() {
 	return time;
 }
 
-glm::vec3 AutonReader::parseCoordinates(const char* coords, double altOffset, bool flip, char delim) {
+Geo AutonReader::parseCoordinates(const char* coords, bool flip, char delim) {
 
 	std::string lats;
 	std::string lons;
@@ -181,52 +279,29 @@ glm::vec3 AutonReader::parseCoordinates(const char* coords, double altOffset, bo
 	
 	std::getline(ss, alts, delim);
 
-	double lat = std::stod(lats);
-	double lon = std::stod(lons);
-	double alt = std::stod(alts);
-	alt += altOffset;
+	Geo point;
+	point.lat = std::stod(lats);
+	point.lon = std::stod(lons);
+	point.alt = std::stod(alts);
+	
+	return point;
+}
+
+glm::vec3 AutonReader::geoToCoordinates(Geo point) {
 
 	static const int earthRadius = 6378137;
 
-	lat *= M_PI / 180;
-	lon *= M_PI / 180;
+	point.lat *= M_PI / 180;
+	point.lon *= M_PI / 180;
 
-	double distance = alt + earthRadius;
-	return glm::vec3(cos(lon) * distance * cos(lat), sin(lon) * distance * cos(lat), distance * sin(lat));
+	double distance = point.alt + earthRadius;
+	return glm::vec3(cos(point.lon) * distance * cos(point.lat), sin(point.lon) * distance * cos(point.lat), distance * sin(point.lat));
 }
 
-void AutonReader::simulatePath(int startIndex, int endIndex) {
-
-	glm::vec3 posPerfect = _steps[startIndex].pos;
-	glm::vec3 posActual = _steps[startIndex].pos;
-	glm::vec3 velPerfect;
-	glm::vec3 velActual;
-
-	double timeStep = 0.1;
-
-	for (int i = startIndex; i < endIndex; i++) {
-		double steps = _steps[startIndex].speed / timeStep;
-		int step = 0;
-		while (step < steps) {
-			glm::vec3 direction = _steps[startIndex + 1].pos - _steps[startIndex].pos;
-			posPerfect += direction * (float) (1 / steps);
-			step++;
+AutonReader::Step AutonReader::getNextCamera(int current) {
+	for (int i = current + 1; i < _steps.size(); i++) {
+		if (_steps[i].type == Step::CAMERA) {
+			return _steps[i];
 		}
-	}
-
-}
-
-void AutonReader::equalizePath(int startIndex, int endIndex) {
-
-	double total = 0.0;
-	for (int i = startIndex; i < endIndex; i++) {
-		total += glm::length(_steps[i + 1].pos - _steps[i].pos);
-	}
-	double mean = total / (endIndex - startIndex);
-
-	for (int i = startIndex; i < endIndex; i++) {
-		glm::vec3 vec = _steps[i + 1].pos - _steps[i].pos;
-		vec *= mean / glm::length(_steps[i + 1].pos - _steps[i].pos);
-		_steps[i + 1].pos = _steps[i].pos + vec;
 	}
 }
