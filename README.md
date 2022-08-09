@@ -26,4 +26,4 @@ coordinates: (a list of coordinates in the form "longitude,latitude,altitude lon
 lookTarget: (latitude longitude altitude) sets the target point to look at for following point that look is "target"
 
 simSpeed:
-	deltaSpeed: sets the speed of the simulation in seconds per second
+- deltaSpeed: sets the speed of the simulation in seconds per second
