@@ -55,6 +55,9 @@ AutonReader::AutonReader(std::string filepath) {
 			else if (strcmp(look, "backward") == 0) {
 				lookType = BACKWARD;
 			}
+			else if (strcmp(look, "down") == 0) {
+				lookType = DOWN;
+			}
 			else if (strcmp(look, "target") == 0) {
 				lookType = TARGET;
 			}
@@ -88,7 +91,6 @@ AutonReader::AutonReader(std::string filepath) {
 			_steps.back().geo = point;
 			_steps.back().altSpeed = altSpeed;
 			_steps.back().time = delay;
-
 		}
 		else if (std::strcmp(_line->Name(), "coordinates") == 0) {
 
@@ -237,6 +239,9 @@ void AutonReader::computeView() {
 		else if (_steps[i].lookType == LookType::BACKWARD) {
 			_steps[i].rot = glm::quatLookAt(glm::normalize(_steps[i - 1].pos - _steps[i].pos), glm::normalize(_steps[i].pos));
 		}
+		else if (_steps[i].lookType == LookType::DOWN) {
+			_steps[i].rot = glm::quatLookAt(glm::normalize(-_steps[i].pos), glm::normalize(_steps[i].pos));
+		}
 	}
 
 }
@@ -255,7 +260,7 @@ std::string AutonReader::getAutonName() {
 
 int64_t AutonReader::getAutonTime() {
 	int64_t time = 0;
-	_auton->QueryInt64Attribute("time", &time);
+	_auton->QueryInt64Attribute("simTime", &time);
 	return time;
 }
 
@@ -289,7 +294,8 @@ Geo AutonReader::parseCoordinates(const char* coords, bool flip, char delim) {
 
 glm::vec3 AutonReader::geoToCoordinates(Geo point) {
 
-	static const int earthRadius = 6378137;
+	const int earthRadius = 6378137;
+	//const int earthRadius = 3389500;
 
 	point.lat *= M_PI / 180;
 	point.lon *= M_PI / 180;

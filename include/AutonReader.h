@@ -32,7 +32,8 @@ public:
 	enum LookType {
 		TARGET,
 		FORWARD,
-		BACKWARD
+		BACKWARD,
+		DOWN
 	};
 
 	struct Step {

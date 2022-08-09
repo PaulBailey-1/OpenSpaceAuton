@@ -18,18 +18,18 @@
 	
 </auton>-->
 
-<auton name="1878" speed="1000000" time="-3831806800" >
+<auton name="1878" speed="1000000" simTime="-3831806800" >
 
   <simSpeed deltaSpeed="100" />
   <lookTarget>63.144762001104 -144.83846617526 0</lookTarget>
-  <move delay="2" altSpeed="false">59.144762001104 -144.83846617526 2282802.6471921</move>
-  <move altSpeed="false">59.144762001104 -144.83846617526 2282802.6471921</move>
+  <move look="target" delay="2" altSpeed="false">59.144762001104 -144.83846617526 2282802.6471921</move>
+  <move look="target" altSpeed="false">59.144762001104 -144.83846617526 2282802.6471921</move>
   <lookTarget>60.664881745029 -141.04208583312 6000</lookTarget>
-  <move speed="50000" altSpeed="false">58.443091142096 -134.52705976485 100000</move>
-  <move delay="2" altSpeed="false">58.443091142096 -134.52705976485 6000</move>
-  <move delay="1">58.443091142096 -134.52705976485 6000</move>
+  <move look="target" speed="50000" altSpeed="false">58.443091142096 -134.52705976485 100000</move>
+  <move look="target" delay="2" altSpeed="false">58.443091142096 -134.52705976485 6000</move>
+  <move look="target" delay="2">58.443091142096 -134.52705976485 6000</move>
 
-  <simSpeed deltaSpeed="50" />
+  <simSpeed deltaSpeed="40" />
   <move look="forward" speed="20000" factor="7">58.443091142196 -134.52705976485 6000</move>
   <move look="forward" speed="17000" factor="0">57.10348862708119 -132.4552893155903 3000</move>
   <simSpeed deltaSpeed="70" />
@@ -41,8 +41,23 @@
   <simSpeed deltaSpeed="40" />
 
   <lookTarget>32.94030656731191 -97.404367473356250 100000</lookTarget>
-  <move altSpeed="false" speed="100000" factor="8">32.97606949933829 -97.45203333939956 100000</move>
-  <move speed="100000" altSpeed="false">32.033770176464 -97.45203333939956 300000</move>
-  <move speed="2000000" altSpeed="false">28.736072026575 -97.45203333939956 1500000</move>
-  
+  <move look="target" altSpeed="false" speed="100000" factor="8">32.97606949933829 -97.45203333939956 100000</move>
+  <move look="target" speed="100000" altSpeed="false">32.033770176464 -97.45203333939956 300000</move>
+  <move look="target" speed="2000000" altSpeed="false">28.736072026575 -97.45203333939956 1500000</move>
+
 </auton>
+
+<!--<auton name="mars" speed="100000" simTime="0" >
+
+  <simSpeed deltaSpeed="1" />
+  <move look="forward" altSpeed="false" factor="10">12.27930565717 -135.17371990873 100000</move>
+  <move look="forward" altSpeed="false" factor="10">1.6791639032193 -113.34090740644 30000</move>
+
+  <move look="forward" altSpeed="false" factor="10">-6.4445503564587 -91.605443015667 10000</move>
+  <move look="forward" altSpeed="false" factor="10">-6.8591600713506 -85.451405352559 10000</move>
+  <move look="forward" altSpeed="false" factor="10">-7.8231605183764 -79.1883893499 10000</move>
+  <move look="forward" altSpeed="false" factor="10">-9.8485745208111 -71.919928342254 20000</move>
+
+  <move end="true" look="forward" altSpeed="false" factor="10">-50.714036257868 -30.05833746632 10000</move>
+
+</auton>-->
