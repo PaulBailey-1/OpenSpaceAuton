@@ -75,7 +75,7 @@ AutonReader::AutonReader(std::string filepath) {
 			int factor = 0;
 			_line->QueryIntAttribute("factor", &factor);
 
-			bool altSpeed = true;
+			bool altSpeed = false;
 			_line->QueryBoolAttribute("altSpeed", &altSpeed);
 
 			Geo point = parseCoordinates(_line->GetText());
@@ -146,12 +146,23 @@ AutonReader::AutonReader(std::string filepath) {
 				riseOffset += rise;
 			}
 
-		} else if (std::strcmp(_line->Name(), "simSpeed") == 0) {
-			int sim = 0;
-			_line->QueryIntAttribute("deltaSpeed", &sim);
+		} else if (std::strcmp(_line->Name(), "sim") == 0) {
+			int speed = 0;
+			_line->QueryIntAttribute("deltaSpeed", &speed);
 
-			_steps.push_back(Step(Step::DELTATIME));
-			_steps.back().deltaTime = sim;
+			int64_t time = 0;
+			_line->QueryInt64Attribute("time", &time);
+
+			if (speed != 0) {
+				_steps.push_back(Step(Step::DELTATIME));
+				_steps.back().deltaTime = speed;
+			}
+
+			if (time != 0) {
+				_steps.push_back(Step(Step::SIMTIME));
+				_steps.back().simTime = time;
+			}
+			
 		}
 		else {
 			printf("Error: could not read xml\n");
@@ -166,7 +177,7 @@ void AutonReader::interpolatePoints() {
 	int loop = 0;
 
 	for (int i = 0; i < _steps.size(); i++) {
-		if (loop > 0 && _steps[i].interpolate == 0) {
+		if (loop > 0 && _steps[i].interpolate == 0 && _steps[i].type == Step::CAMERA) {
 			endIndex = i - 1;
 			break;
 		}
@@ -179,20 +190,21 @@ void AutonReader::interpolatePoints() {
 	int endOffset = _steps.size() - 1 - endIndex;
 	for (int j = 0; j < loop; j++) {
 		for (int i = startIndex; i < _steps.size() - 1 - endOffset; i += 2) {
+			if (_steps[i].type == Step::CAMERA) {
+				Geo mean;
+				Step nextStep = getNextCamera(i);
+				mean.lat = (_steps[i].geo.lat + nextStep.geo.lat) / 2;
+				mean.lon = (_steps[i].geo.lon + nextStep.geo.lon) / 2;
+				mean.alt = (_steps[i].geo.alt + nextStep.geo.alt) / 2;
 
-			Geo mean;
-			Step nextStep = getNextCamera(i);
-			mean.lat = (_steps[i].geo.lat + nextStep.geo.lat) / 2;
-			mean.lon = (_steps[i].geo.lon + nextStep.geo.lon) / 2;
-			mean.alt = (_steps[i].geo.alt + nextStep.geo.alt) / 2;
+				Step newStep = _steps[i];
+				newStep.geo = mean;
+				newStep.pos = geoToCoordinates(mean);
 
-			Step newStep = _steps[i];
-			newStep.geo = mean;
-			newStep.pos = geoToCoordinates(mean);
+				newStep.rot = glm::mix(nextStep.rot, _steps[i].rot, 0.5f);
 
-			newStep.rot = glm::mix(nextStep.rot, _steps[i].rot, 0.5f);
-
-			_steps.insert(_steps.begin() + i + 1, newStep);
+				_steps.insert(_steps.begin() + i + 1, newStep);
+			}
 		}
 	}
 }
@@ -230,9 +242,6 @@ void AutonReader::computeView() {
 			}
 			
 		}
-		//else if (_steps[i].lookType == LookType::FORWARD && i < _steps.size() - 10) {
-		//	_steps[i].rot = glm::quatLookAt(glm::normalize(_steps[(int) (floor((i + 10) / 10.0) * 10)].pos - _steps[i].pos), glm::normalize(_steps[i].pos));
-		//}
 		else if (_steps[i].lookType == LookType::BACKWARD && i >= 10) {
 			_steps[i].rot = glm::quatLookAt(glm::normalize(_steps[i - 10].pos - _steps[i].pos), glm::normalize(_steps[i].pos));
 		}
@@ -240,7 +249,7 @@ void AutonReader::computeView() {
 			_steps[i].rot = glm::quatLookAt(glm::normalize(_steps[i - 1].pos - _steps[i].pos), glm::normalize(_steps[i].pos));
 		}
 		else if (_steps[i].lookType == LookType::DOWN) {
-			_steps[i].rot = glm::quatLookAt(glm::normalize(-_steps[i].pos), glm::normalize(_steps[i].pos));
+			_steps[i].rot = glm::quatLookAt(glm::normalize(-_steps[i].pos), glm::vec3(0, 0, 1));
 		}
 	}
 

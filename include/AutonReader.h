@@ -40,7 +40,8 @@ public:
 
 		enum StepType {
 			CAMERA,
-			DELTATIME
+			DELTATIME,
+			SIMTIME
 		};
 
 		Step(Step::StepType type_) {
@@ -58,6 +59,7 @@ public:
 			altSpeed = true;
 
 			deltaTime = 0;
+			simTime = 0;
 		}
 
 		StepType type;
@@ -74,6 +76,8 @@ public:
 
 		int interpolate;
 		int deltaTime;
+
+		int64_t simTime;
 
 		bool altSpeed;
 

@@ -3,6 +3,7 @@ Created by Paul Bailey at HMNS in 2022
 
 This is a tool that allows the creation of OpenSpace recording files from XML defined paths and commands. Its intent is to allow for the creation of precise, repeatable recordings without external command.
 An input file at "PROJECTDIR"/res/Auton.xml is read in and a recording is output to C:\OpenSpace\OpenSpace-0.18.0\user\recordings\
+Dependencies include tinyxml2 and glm
 
 An auton is defined by the xml root element "auton"
 auton:
@@ -25,5 +26,6 @@ coordinates: (a list of coordinates in the form "longitude,latitude,altitude lon
 
 lookTarget: (latitude longitude altitude) sets the target point to look at for following point that look is "target"
 
-simSpeed:
+sim:
 - deltaSpeed: sets the speed of the simulation in seconds per second
+- simTime: sets the time of the simulation in J2000

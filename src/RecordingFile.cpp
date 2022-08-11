@@ -23,6 +23,9 @@ void RecordingFile::add(AutonReader::Step step) {
 		_time += step.time;
 	} else if (step.type == AutonReader::Step::DELTATIME) {
 		std::snprintf(line, 200, "script %.7f %.7f %" PRId64 " 1 openspace.time.setDeltaTime(%i)\n", _time, _time, _simTime, step.deltaTime);
+	} else if (step.type == AutonReader::Step::SIMTIME) {
+		_simTime = step.simTime;
+		std::snprintf(line, 200, "script %.7f %.7f %" PRId64 " 1 openspace.time.setTime(%" PRId64 ")\n", _time, _time, _simTime, step.simTime);
 	}
 
 	_file << line;
