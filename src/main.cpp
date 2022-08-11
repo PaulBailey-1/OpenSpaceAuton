@@ -10,11 +10,9 @@ int main() {
 
 	record.setTime(auton.getAutonTime());
 
-	printf("Hi Paul !!!\n");
-
 	printf("Calculating rotations ...\n");
-	auton.computeView();
 	auton.interpolatePoints();
+	auton.computeView();
 	auton.computeSpeeds();
 
 	printf("Recording steps... \n");

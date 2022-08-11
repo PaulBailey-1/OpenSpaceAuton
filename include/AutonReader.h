@@ -86,6 +86,7 @@ public:
 	AutonReader(std::string filepath);
 
 	void interpolatePoints();
+	int interpolateString(int startIndex, int endIndex, int loop);
 	void computeView();
 	void computeSpeeds();
 

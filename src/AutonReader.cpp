@@ -178,15 +178,20 @@ void AutonReader::interpolatePoints() {
 
 	for (int i = 0; i < _steps.size(); i++) {
 		if (loop > 0 && _steps[i].interpolate == 0 && _steps[i].type == Step::CAMERA) {
-			endIndex = i - 1;
-			break;
+			endIndex = i;
+			i += interpolateString(startIndex, endIndex, loop);
+			loop = 0;
+			continue;
 		}
 		if (_steps[i].interpolate > 0 && loop == 0) {
 			startIndex = i;
 			loop = _steps[i].interpolate;
 		}
 	}
+}
 
+int AutonReader::interpolateString(int startIndex, int endIndex, int loop) {
+	int added = 0;
 	int endOffset = _steps.size() - 1 - endIndex;
 	for (int j = 0; j < loop; j++) {
 		for (int i = startIndex; i < _steps.size() - 1 - endOffset; i += 2) {
@@ -204,9 +209,11 @@ void AutonReader::interpolatePoints() {
 				newStep.rot = glm::mix(nextStep.rot, _steps[i].rot, 0.5f);
 
 				_steps.insert(_steps.begin() + i + 1, newStep);
+				added++;
 			}
 		}
 	}
+	return added;
 }
 
 void AutonReader::computeSpeeds() {

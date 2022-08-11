@@ -62,16 +62,32 @@
 
 </auton>-->
 
-<auton name="UsaToEurope" speed="1000000" simTime="1439440000" >
+<auton name="UsaToEurope" speed="2000000" simTime="0" >
 
-  <sim deltaSpeed="300"/>
-  <!--<move look="down" delay="5">27.837860628983 -102.86070512677 3000000</move>
-  <move look="down" factor="10">27.837860628983 -102.86070512677 3000000</move>
-  <move look="down" factor="10">32.078434957032 -49.09623098970605 3000000</move>-->
+  <sim deltaSpeed="500"/>
 
-  <sim time="2577381800" />
-  <move look="down" factor="10">32.078434957032 -39.09623098970605 3000000</move>
-  <move look="down" delay="5">36.319009285081 24.6682431473579 3000000</move>
-  <move look="down" >36.319009285081 24.6682431473579 3000000</move>
+  <!--<sim time="-267470000" />
+  <move look="down" delay="5">17.728969941552 -99.906117286484 8000000</move>
+  <move look="down" factor="5">17.728969941552 -99.906117286484 8000000</move>-->
 
-</auton>
+  <!--<sim time="	870465000" />
+  <move look="down" factor="3" >20.7477413575565 -37.3111135043725 8000000</move>
+  
+  <move look="down" delay="5">23.766512773561 25.283890277739 8000000</move>
+  <move look="down" factor="3">23.766512773561 25.283890277739 8000000</move>
+
+  <move look="down" factor="3">25.802186701272 115.9277022977455 8000000</move>
+  <move look="down">25.802186701272 180 8000000</move>-->
+  <!--<sim time="1439435000" />
+  <move look="down" factor="3">25.802186701272 -180 8000000</move>
+  
+  <move look="down" delay="5">27.837860628983 -102.86070512677 8000000</move>
+  <move look="down" factor="3">27.837860628983 -102.86070512677 8000000</move>
+  <move look="down" factor="0">32.078434957032 -39.09623098970605 8000000</move>-->
+
+  <sim time="2577380800" />
+  <move look="down" factor="3">32.078434957032 -39.09623098970605 8000000</move>
+  <move look="down" delay="5">36.319009285081 24.6682431473579 8000000</move>
+  <move look="down">36.319009285081 24.6682431473579 8000000</move>
+
+</auton>	
